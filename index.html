@@ -1,53 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bido - Video App</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-    body { background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-    .app-container { width: 100%; max-width: 400px; height: 100vh; display: flex; flex-direction: column; background: #121212; position: relative; }
-    .header { padding: 15px; text-align: center; font-size: 20px; font-weight: bold; background: #1f1f1f; border-bottom: 1px solid #333; }
-    .feed { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; }
-    .video-card { height: 100%; width: 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; position: relative; background: #000; }
-    video { width: 100%; height: 100%; object-fit: cover; }
-    .upload-btn { position: absolute; bottom: 20px; right: 20px; background: #ff0050; padding: 12px 20px; border-radius: 30px; font-weight: bold; border: none; color: #fff; cursor: pointer; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bido App - Live Video Feed & Upload</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body {
+background-color: #000;
+color: #fff;
+font-family: 'Inter', sans-serif;
+overflow: hidden;
+margin: 0;
+padding: 0;
+user-select: none;
+}
+.video-container {
+scroll-snap-type: y mandatory;
+overflow-y: scroll;
+height: 100vh;
+width: 100vw;
+position: relative;
+}
+.video-slide {
+scroll-snap-align: start;
+height: 100vh;
+width: 100vw;
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+background: #111;
+}
+video {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+</style>
 </head>
-<body>
-
-  <div class="app-container">
-    <div class="header">Bido App</div>
-    <div class="feed" id="videoFeed">
-      <p style="text-align:center; padding-top: 50px;">Loading videos...</p>
-    </div>
-    <button class="upload-btn" onclick="alert('Upload feature coming soon!')">+ Upload</button>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://your-supabase-url.supabase.co"; // Replace with your Supabase URL
-    const SUPABASE_KEY = "Sb_publishable_f-_CwC9R5oX9yRpk1icdKQ__6x9cfEu";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    async function loadVideos() {
-      const feed = document.getElementById('videoFeed');
-      const { data: videos, error } = await supabase.from('videos').select('*');
-      
-      if (error || !videos.length) {
-        feed.innerHTML = '<p style="text-align:center; padding-top: 50px;">No videos found yet!</p>';
-        return;
-      }
-
-      feed.innerHTML = videos.map(v => `
-        <div class="video-card">
-          <video src="${v.url}" controls autoplay loop muted></video>
-        </div>
-      `).join('');
-    }
-
-    loadVideos();
-  </script>
+<body class="bg-black text-white h-screen w-screen overflow-hidden">
+<header class="absolute top-0 left-0 w-full z-20 flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
+<h1 class="text-xl font-bold tracking-wider">Bido App 🔥</h1>
+<div id="auth-status" class="text-xs bg-white/20 px-3 py-1 rounded-full">Connecting...</div>
+</header>
+<main id="feed" class="video-container">
+<div id="loading-state" class="h-screen w-screen flex flex-col items-center justify-center text-center p-6">
+<div class="animate-spin rounded-full h-10 w-10 border-b-2 border-white mb-4"></div>
+<p id="status-text" class="text-gray-400">Loading videos...</p>
+</div>
+</main>
+<button onclick="openUploadModal()" class="fixed bottom-6 right-6 z-30 bg-rose-600 hover:bg-rose-700 text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-transform active:scale-95">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+</svg>
+</button>
+<div id="upload-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-6">
+<div class="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+<h2 class="text-lg font-bold mb-4">Upload New Video</h2>
+<div class="space-y-4">
+<div>
+<label class="block text-xs text-zinc-400 mb-1">Select Video File</label>
+<input type="file" id="video-file-input" accept="video/*" class="w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer">
+</div>
+<div>
+<label class="block text-xs text-zinc-400 mb-1">Caption / Description</label>
+<input type="text" id="video-caption-input" placeholder="Say something about this video..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-rose-600">
+</div>
+<div id="upload-progress-container" class="hidden">
+<div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+<div id="upload-progress-bar" class="bg-rose-600 h-full w-0 transition-all duration-300"></div>
+</div>
+<p id="upload-progress-text" class="text-xs text-zinc-400 text-center mt-2">Uploading...</p>
+</div>
+<div class="flex space-x-3 pt-2">
+<button onclick="closeUploadModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-2.5 rounded-xl text-sm font-medium transition-colors">Cancel</button>
+<button id="upload-submit-btn" onclick="uploadVideo()" class="flex-1 bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl text-sm font-medium transition-colors">Upload</button>
+</div>
+</div>
+</div>
+</div>
+<div id="alert-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-6">
+<div class="bg-zinc-900 border border-zinc-800 w-full max-w-xs rounded-2xl p-6 text-center shadow-2xl">
+<p id="alert-message" class="text-sm text-zinc-200 mb-5">Notification message here</p>
+<button onclick="closeAlertModal()" class="w-full bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl text-sm font-medium transition-colors">OK</button>
+</div>
+</div>
+<script>
+const SUPABASE_URL = "https://mczywerigrwlzbufaclx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jenl3ZXJpZ3J3bHpidWZhY2x4Iiwicm9sZSI6ImFub24iLCJpYXAiOiJpYXAiOm51bGciLCJwbGF0Zm9ybSI6IndlYiIs...";
+let supabaseClient = null;
+function showAlert(msg) {
+document.getElementById('alert-message').innerText = msg;
+document.getElementById('alert-modal').classList.remove('hidden');
+}
+function closeAlertModal() {
+document.getElementById('alert-modal').classList.add('hidden');
+}
+function openUploadModal() {
+document.getElementById('video-file-input').value = '';
+document.getElementById('video-caption-input').value = '';
+document.getElementById('upload-progress-container').classList.add('hidden');
+document.getElementById('upload-modal').classList.remove('hidden');
+}
+function closeUploadModal() {
+document.getElementById('upload-modal').classList.add('hidden');
+}
+window.addEventListener('DOMContentLoaded', async () => {
+try {
+if (window.supabase) {
+supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+document.getElementById('auth-status').innerText = 'Online';
+}
+await fetchVideos();
+} catch (err) {
+console.error(err);
+document.getElementById('status-text').innerText = 'Failed to load videos.';
+document.getElementById('auth-status').innerText = 'Offline';
+}
+});
+async function fetchVideos() {
+try {
+if (supabaseClient) {
+const { data, error } = await supabaseClient.from('videos').select('*').order('created_at', { ascending: false });
+if (!error && data && data.length > 0) {
+renderFeed(data);
+return;
+}
+}
+} catch (e) {
+console.log('Database fetch fallback');
+}
+setTimeout(() => {
+const loadingState = document.getElementById('loading-state');
+if (loadingState) {
+loadingState.innerHTML = ⁠<div class="text-zinc-400 mb-2 font-medium">No videos uploaded yet</div> <p class="text-xs text-zinc-500">Tap the + button below to upload your first video right now!</p>⁠;
+}
+}, 1000);
+}
+function renderFeed(videos) {
+const feed = document.getElementById('feed');
+feed.innerHTML = '';
+videos.forEach((vid) => {
+const slide = document.createElement('div');
+slide.className = 'video-slide';
+slide.innerHTML = ⁠<video src="${vid.url}" loop playsinline preload="auto" controls></video> <div class="absolute bottom-6 left-4 right-20 z-10"> <p class="text-sm font-medium text-white drop-shadow">${vid.caption || 'Untitled'}</p> </div>⁠;
+feed.appendChild(slide);
+});
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+const video = entry.target.querySelector('video');
+if (video) {
+if (entry.isIntersecting) {
+video.play().catch(e => console.log('Autoplay prevented'));
+} else {
+video.pause();
+}
+}
+});
+}, { threshold: 0.6 });
+document.querySelectorAll('.video-slide').forEach(slide => {
+observer.observe(slide);
+});
+}
+async function uploadVideo() {
+const fileInput = document.getElementById('video-file-input');
+const captionInput = document.getElementById('video-caption-input');
+if (!fileInput.files || fileInput.files.length === 0) {
+showAlert('Please select a video file first.');
+return;
+}
+const file = fileInput.files[0];
+const caption = captionInput.value.trim();
+const progressContainer = document.getElementById('upload-progress-container');
+const progressBar = document.getElementById('upload-progress-bar');
+const progressText = document.getElementById('upload-progress-text');
+const submitBtn = document.getElementById('upload-submit-btn');
+progressContainer.classList.remove('hidden');
+submitBtn.disabled = true;
+submitBtn.classList.add('opacity-50');
+try {
+progressText.innerText = 'Preparing upload...';
+progressBar.style.width = '30%';
+if (!supabaseClient) {
+throw new Error('Supabase client not initialized.');
+}
+const fileName = ⁠${Date.now()}_${file.name}⁠;
+progressText.innerText = 'Uploading video...';
+progressBar.style.width = '60%';
+const { data: uploadData, error: uploadError } = await supabaseClient.storage
+.from('videos')
+.upload(fileName, file);
+if (uploadError) throw uploadError;
+const { data: { publicUrl } } = supabaseClient.storage
+.from('videos')
+.getPublicUrl(fileName);
+progressText.innerText = 'Saving info...';
+progressBar.style.width = '90%';
+const { error: dbError } = await supabaseClient
+.from('videos')
+.insert([{ url: publicUrl, caption: caption }]);
+if (dbError) throw dbError;
+progressBar.style.width = '100%';
+progressText.innerText = 'Upload successful!';
+setTimeout(() => {
+closeUploadModal();
+location.reload();
+}, 1000);
+} catch (err) {
+console.error(err);
+showAlert('Upload failed: ' + (err.message || 'Check your Supabase bucket policy.'));
+submitBtn.disabled = false;
+submitBtn.classList.0 && submitBtn.classList.remove('opacity-50');
+}
+}
+</script>
 </body>
 </html>
