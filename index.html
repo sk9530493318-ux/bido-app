@@ -1,125 +1,93 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bido App 🔥</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body, html {
-background-color: #000000;
-color: #ffffff;
-margin: 0;
-padding: 0;
-height: 100%;
-width: 100%;
-overflow: hidden;
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-.feed-container {
-height: 100vh;
-width: 100vw;
-overflow-y: scroll;
-scroll-snap-type: y mandatory;
-scroll-behavior: smooth;
-}
-.video-slide {
-height: 100vh;
-width: 100vw;
-scroll-snap-align: start;
-position: relative;
-background: #111;
-display: flex;
-align-items: center;
-justify-content: center;
-}
-video {
-width: 100%;
-height: 100%;
-object-fit: cover;
-}
-</style>
-</head>
-<body>
-<header class="absolute top-0 left-0 right-0 z-50 flex justify-between items-center px-4 py-3 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-<h1 class="text-xl font-bold tracking-wider flex items-center gap-1 pointer-events-auto">
-Bido App <span class="text-red-500">🔥</span>
-</h1>
-<div id="status-badge" class="text-xs bg-green-600 px-3 py-1 rounded-full font-medium text-white pointer-events-auto shadow">
-Online
-</div>
-</header>
-<main id="feed-container" class="feed-container">
-<!-- Videos will load here -->
-</main>
-<button onclick="addNewVideo()" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg text-3xl font-bold transition-transform active:scale-95 pointer-events-auto text-white">
-+
-</button>
-<script>
-const videos = [
-{
-id: 1,
-author: "@nature_vibes",
-title: "Peaceful forest stream 🌲✨",
-url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-likes: "14.2K",
-comments: "420"
-},
-{
-id: 2,
-author: "@wildlife_hd",
-title: "Majestic wildlife in action 🦌",
-url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-likes: "38.9K",
-comments: "1.5K"
-},
-{
-id: 3,
-author: "@fun_clips",
-title: "Amazing moments captured on cam 🎥",
-url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-likes: "92.4K",
-comments: "3.1K"
-}
-];
-function loadFeed() {
-const container = document.getElementById('feed-container');
-container.innerHTML = '';
-videos.forEach((item, index) => {
-const slide = document.createElement('div');
-slide.className = 'video-slide';
-slide.innerHTML = ⁠<video src="${item.url}" loop muted playsinline webkit-playsinline preload="auto"></video> <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none"></div> <div class="absolute bottom-16 left-4 right-20 z-10 pointer-events-auto"> <h3 class="font-semibold text-lg text-white drop-shadow">${item.author}</h3> <p class="text-sm text-gray-200 mt-1 drop-shadow">${item.title}</p> </div> <div class="absolute bottom-20 right-4 z-10 flex flex-col items-center gap-4 pointer-events-auto"> <button onclick="toggleLike(this)" class="w-11 h-11 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-2xl active:scale-90 transition">❤️</button> <span class="text-xs font-bold">${item.likes}</span> <button onclick="alert('Comments coming soon!')" class="w-11 h-11 bg-black/50 backdrop-blur rounded-full flex items-center justify-center text-2xl active:scale-90 transition">💬</button> <span class="text-xs font-bold">${item.comments}</span> </div>⁠;
-container.appendChild(slide);
-});
-setupVideoAutoplay();
-}
-function setupVideoAutoplay() {
-const videoElements = document.querySelectorAll('video');
-const observer = new IntersectionObserver((entries) => {
-entries.forEach(entry => {
-const video = entry.target;
-if (entry.isIntersecting) {
-video.play().catch(err => console.log("Autoplay blocked:", err));
-} else {
-video.pause();
-video.currentTime = 0;
-}
-});
-}, { threshold: 0.6 });
-videoElements.forEach(video => observer.observe(video));
-}
-function toggleLike(btn) {
-btn.classList.toggle('text-red-500');
-if(btn.style.transform === 'scale(1.2)') {
-btn.style.transform = 'scale(1)';
-} else {
-btn.style.transform = 'scale(1.2)';
-}
-}
-function addNewVideo() {
-alert('Upload feature is ready to be configured!');
-}
-window.onload = loadFeed;
-</script>
-</body>
-</html>
+Build a completely original global video-sharing platform called “Bido”.
+
+Bido should be a modern, premium, fast and mobile-first platform for users and creators in 180 countries. Do not copy YouTube, Bilibili, TikTok, or any existing platform’s exact UI, branding, layout, or assets. Create an original Bido identity and design.
+
+Core features:
+- Home feed with personalized recommendations
+- Long videos and short videos
+- Global search
+- Trending videos
+- Like, comment, share, follow
+- Creator channels
+- Playlists and Watch Later
+- Notifications
+- Video upload with title, description, tags and category
+- Video editing tools
+- Live streaming with live chat
+- Multilingual interface
+- Multiple currencies
+- Creator Studio
+- Creator analytics
+- Ads and creator monetization
+- Creator eligibility: minimum 500 followers + 2,000 public watch hours, plus original-content, copyright, community-guideline and other policy requirements
+- Secure creator payment system
+- Reports, block, spam protection and content moderation
+- Copyright protection
+- Age-safety controls
+- Community Guidelines and Monetization Policies
+- Admin dashboard
+- Scalable architecture for global users
+
+Unique Bido features:
+
+1. Bido Cloud
+Give creators secure cloud storage for uploaded videos, edited versions, thumbnails, AI prompts and project files. Organize files automatically and prevent accidental loss of important versions.
+
+2. Bido AI Prompt Generator
+Allow a creator to upload a video. AI analyzes the video and generates a detailed AI-video prompt describing:
+- scene
+- characters
+- actions
+- location
+- mood
+- camera movement
+- lighting
+- visual style
+- duration
+- important details
+
+Show:
+“Copy Prompt”
+“Make It Better”
+“Prompt to Video”
+
+3. Bido Remix
+Allow eligible creators to create their own original version/remix of supported content while respecting copyright and creator permissions.
+
+4. Bido Pulse
+Provide real-time audience reactions and useful viewer engagement analytics.
+
+5. Watch Together
+Allow users to watch supported videos together with friends and chat.
+
+Design:
+- Original Bido logo/branding
+- Premium modern UI
+- Clean navigation
+- Smooth animations
+- Fast loading
+- Responsive on mobile, tablet and desktop
+- Dark and light themes
+- Accessible typography and controls
+- Do not use copyrighted logos or assets from other platforms
+
+Technical requirements:
+- Build production-ready architecture
+- Separate frontend, backend, database, authentication, storage and video-processing services
+- Secure authentication and authorization
+- API-based architecture
+- Proper database design
+- Video upload, processing, thumbnails and streaming architecture
+- Rate limiting and abuse prevention
+- Secure payments
+- Logging and monitoring
+- Error handling
+- Backup and recovery
+- Privacy and data protection
+- Design the system so it can scale globally
+
+Important:
+Do not create only a visual demo. Build the project structure so real backend services and APIs can be connected. Keep security, copyright, moderation, privacy, age safety and legal compliance in mind.
+
+Start with Phase 1:
+Create the original Bido frontend foundation and premium home screen. Make it fully responsive and functional, then proceed step-by-step to the backend and remaining features.
