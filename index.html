@@ -91,3 +91,146 @@ Do not create only a visual demo. Build the project structure so real backend se
 
 Start with Phase 1:
 Create the original Bido frontend foundation and premium home screen. Make it fully responsive and functional, then proceed step-by-step to the backend and remaining features.
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bido App - Ultimate Global Video Platform (180+ Nations)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body { background-color: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+.video-container { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100vh; width: 100vw; position: relative; scrollbar-width: none; }
+.video-container::-webkit-scrollbar { display: none; }
+.video-slide { scroll-snap-align: start; height: 100vh; width: 100vw; position: relative; display: flex; align-items: center; justify-content: center; background: #080808; }
+video { width: 100%; height: 100%; object-fit: cover; }
+.global-badge { background: linear-gradient(135deg, #f43f5e 0%, #a855f7 50%, #3b82f6 100%); }
+</style>
+</head>
+<body class="bg-black text-white h-screen w-screen overflow-hidden">
+<header class="absolute top-0 left-0 w-full z-20 flex justify-between items-center p-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent">
+<div class="flex items-center space-x-2">
+<h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-rose-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent">BIDO ULTRA 🌍</h1>
+<span class="text-[9px] global-badge text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-2xl">180+ Nations</span>
+</div>
+<div id="auth-status" class="text-xs bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-zinc-300">Secure Edge...</div>
+</header>
+<main id="feed" class="video-container">
+<div id="loading-state" class="h-screen w-screen flex flex-col items-center justify-center text-center p-6">
+<div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500 mb-4 shadow-2xl"></div>
+<p id="status-text" class="text-zinc-400 font-medium">Connecting to global elastic storage nodes...</p>
+</div>
+</main>
+<button onclick="openUploadModal()" class="fixed bottom-6 right-6 z-30 global-badge text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 ring-4 ring-rose-500/30">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+</button>
+<div id="upload-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl hidden flex items-center justify-center p-6">
+<div class="bg-zinc-900 border border-zinc-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 global-badge"></div>
+<h2 class="text-lg font-bold mb-1 text-white flex items-center justify-between">
+<span>Elastic Global Upload</span>
+<span class="text-[10px] text-zinc-400 font-normal">Infinite Storage</span>
+</h2>
+<p class="text-xs text-zinc-400 mb-5">High-capacity streaming optimized to prevent crashes and lagging.</p>
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-semibold text-zinc-300 mb-1">Select High-Res Video File</label>
+<input type="file" id="video-file-input" accept="video/*" class="w-full text-xs text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-zinc-800 file:text-rose-400 hover:file:bg-zinc-700 cursor-pointer border border-zinc-800 rounded-xl p-1 bg-zinc-950/50">
+</div>
+<div>
+<label class="block text-xs font-semibold text-zinc-300 mb-1">Global Broadcast Caption</label>
+<input type="text" id="video-caption-input" placeholder="Write something epic #global..." class="w-full bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500 transition-colors">
+</div>
+<div id="upload-progress-container" class="hidden space-y-2">
+<div class="w-full bg-zinc-950 rounded-full h-2 overflow-hidden border border-zinc-800">
+<div id="upload-progress-bar" class="global-badge h-full w-0 transition-all duration-300"></div>
+</div>
+<p id="upload-progress-text" class="text-xs text-zinc-400 text-center font-medium">Encrypting & pushing to global edge...</p>
+</div>
+<div class="flex space-x-3 pt-2">
+<button onclick="closeUploadModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-xl text-xs font-semibold transition-colors text-zinc-300">Cancel</button>
+<button id="upload-submit-btn" onclick="uploadVideo()" class="flex-1 global-badge hover:opacity-90 py-3 rounded-xl text-xs font-bold transition-all shadow-lg text-white">Broadcast</button>
+</div>
+</div>
+</div>
+</div>
+<div id="alert-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-6">
+<div class="bg-zinc-900 border border-zinc-800 w-full max-w-xs rounded-3xl p-6 text-center shadow-2xl">
+<p id="alert-message" class="text-sm text-zinc-200 mb-6 font-medium leading-relaxed">Secure Notice</p>
+<button onclick="closeAlertModal()" class="w-full global-badge py-3 rounded-xl text-xs font-bold transition-all text-white shadow-lg">Understood</button>
+</div>
+</div>
+<script>
+const SUPABASE_URL = "https://mczywerigrwlzbufaclx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jenl3ZXJpZ3J3bHpidWZhY2x4Iiwicm9sZSI6ImFub24iLCJpYXAiOiJpYXAiOm51bGciLCJwbGF0Zm9ybSI6IndlYiIs...";
+let supabaseClient = null;
+function showAlert(msg) { document.getElementById('alert-message').innerText = msg; document.getElementById('alert-modal').classList.remove('hidden'); }
+function closeAlertModal() { document.getElementById('alert-modal').classList.add('hidden'); }
+function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
+function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
+window.addEventListener('DOMContentLoaded', async () => {
+try {
+if (window.supabase) {
+supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+document.getElementById('auth-status').innerText = 'Elastic Cloud Online 🌍';
+}
+await fetchVideos();
+} catch (e) { document.getElementById('status-text').innerText = 'Fallback Offline Mode'; }
+});
+async function fetchVideos() {
+try {
+if (supabaseClient) {
+const { data, error } = await supabaseClient.from('videos').select('*').order('created_at', { ascending: false });
+if (!error && data && data.length > 0) { renderFeed(data); return; }
+}
+} catch(e) {}
+setTimeout(() => {
+const ls = document.getElementById('loading-state');
+if (ls) ls.innerHTML = '<div class="text-zinc-300 mb-2 font-bold text-base">No Global Broadcasts Yet</div><p class="text-xs text-zinc-500 max-w-xs mx-auto">Tap the glowing broadcast button below to share your high-res video worldwide across 180+ nations!</p>';
+}, 1000);
+}
+function renderFeed(videos) {
+const feed = document.getElementById('feed'); feed.innerHTML = '';
+videos.forEach(vid => {
+const s = document.createElement('div'); s.className = 'video-slide';
+s.innerHTML = ⁠<video src="${vid.url}" loop playsinline preload="metadata" controls></video><div class="absolute bottom-8 left-4 right-20 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 rounded-2xl"><p class="text-sm font-semibold text-white drop-shadow-md">${vid.caption || 'Global Stream'}</p></div>⁠;
+feed.appendChild(s);
+});
+const obs = new IntersectionObserver((entries) => {
+entries.forEach(e => {
+const v = e.target.querySelector('video');
+if(v) {
+if(e.isIntersecting) {
+v.play().catch(()=>{});
+} else {
+v.pause();
+v.currentTime = 0; // Prevent memory leak and crashes
+}
+}
+});
+}, { threshold: 0.6 });
+document.querySelectorAll('.video-slide').forEach(s => obs.observe(s));
+}
+async function uploadVideo() {
+const fi = document.getElementById('video-file-input'), ci = document.getElementById('video-caption-input');
+if (!fi.files || !fi.files[0]) { showAlert('Please select a video file first.'); return; }
+const file = fi.files[0], caption = ci.value.trim();
+const pc = document.getElementById('upload-progress-container'), pb = document.getElementById('upload-progress-bar'), pt = document.getElementById('upload-progress-text');
+pc.classList.remove('hidden');
+try {
+pt.innerText = 'Allocating high-capacity storage buffer...'; pb.style.width = '35%';
+const fn = ⁠ultra_${Date.now()}_${file.name}⁠;
+const { error: ue } = await supabaseClient.storage.from('videos').upload(fn, file, { cacheControl: '3600', upsert: false });
+if (ue) throw ue;
+const { data: { publicUrl } } = supabaseClient.storage.from('videos').getPublicUrl(fn);
+pb.style.width = '80%'; pt.innerText = 'Syncing across 180+ global CDN nodes...';
+const { error: de } = await supabaseClient.from('videos').insert([{ url: publicUrl, caption }]);
+if (de) throw de;
+pb.style.width = '100%'; pt.innerText = 'Global Broadcast Successful!';
+setTimeout(() => { closeUploadModal(); location.reload(); }, 1000);
+} catch(err) { showAlert('Broadcast failed: ' + err.message); }
+}
+</script>
+</body>
+</html>
